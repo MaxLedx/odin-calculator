@@ -1,0 +1,88 @@
+html {
+    box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+}
+
+* {
+    font-family: "Host Grotesk", sans-serif;
+}
+
+body {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#calculator {
+    width: 296px;
+    height: 456px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background-color: black;
+    border-radius: 12px;
+}
+
+#display {
+    width: 280px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    background-color: #ffffff;
+    border-radius: 8px;
+    font-size: 36px;
+    padding: 8px;
+}
+
+.btn,
+.btn-medium,
+.btn-large {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    background-color: red;
+    border-radius: 8px;
+    font-size: 24px;
+}
+
+.btn-medium {
+    width: 100px;
+}
+
+.btn-large {
+    width: 136px;
+}
+
+.btn-action {
+    background-color: #FFB20F;
+}
+
+.btn-action :first-child::first-letter {
+    text-decoration: underline;
+}
+
+.btn-digit {
+    background-color: #D81E5B;
+}
+
+.btn-operator {
+    background-color: #188FA7;
+}
+
+.disabled {
+    opacity: 50%;
+}
