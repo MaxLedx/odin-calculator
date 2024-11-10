@@ -25,21 +25,37 @@ const ui = {
     operators: ['plus', 'minus', 'times', 'divide'].reduce((acc, op) => {
         acc[op] = document.querySelector(`#${op}`);
         return acc;
-    }, {})
+    }, {}),
+    operatorKeys: {
+        '+': 'plus',
+        '-': 'minus',
+        '*': 'times',
+        '/': 'divide',
+        '=': 'equals',
+        'Enter': 'equals'
+    }
 };
+
+document.addEventListener('keydown', event => {
+    if (state.forceClear) onClearHandler();
+    const key = event.key;
+    if (key.toLowerCase() === 'c') onClearHandler();
+    if (!isNaN(key) || key === '.') onDigitInputHandler(key);
+    if (key in ui.operatorKeys) onOperatorInputHandler(ui.operatorKeys[key]);
+    if (key === 'Backspace' || key === 'Delete') onBackspaceHandler();
+
+    renderView();
+});
 
 ui.calculator.addEventListener('click', event => {
     if (state.forceClear) onClearHandler();
-
     const id = event.target.id;
-
     if (!isNaN(id)) onDigitInputHandler(id);
     else if (calculator.operators.includes(id)) onOperatorInputHandler(id);
     else if (id === 'clear' || id === 'clearText') onClearHandler();
     else if (id === 'decimal') onDigitInputHandler('.');
     else if (id === 'backspace') onBackspaceHandler();
 
-    dumpState();
     renderView();
 });
 
@@ -110,11 +126,6 @@ function onClearHandler() {
     state.expression.b = null;
     state.displayValue = '';
     state.forceClear = false;
-}
-
-// Use for debug
-function dumpState() {
-    console.log(state);
 }
 
 // https://stackoverflow.com/questions/11832914/how-to-round-to-at-most-2-decimal-places-if-necessary
