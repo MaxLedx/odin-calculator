@@ -18,6 +18,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    background-color: #188FA7;
 }
 
 #calculator {
@@ -43,6 +44,12 @@ body {
     border-radius: 8px;
     font-size: 36px;
     padding: 8px;
+
+}
+
+#displayText {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .btn,
@@ -85,4 +92,8 @@ body {
 
 .disabled {
     opacity: 50%;
+}
+
+.highlight {
+    background-color: #FFB20F;
 }
