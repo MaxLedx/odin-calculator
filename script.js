@@ -1,30 +1,41 @@
 const state = {
-    expression: { leftOperand: null, operator: null, rightOperand: null },
+    expression: { a: null, operator: null, b: null },
     displayValue: '',
     forceClear: false,
-}
+};
 
-const OPERATORS = ['+', '-', '*', '/', '='];
-const calculator = document.querySelector('#calculator');
-const display = document.querySelector('#displayText');
-const decimal = document.querySelector('#decimal');
+const calculator = {
+    operators: ['plus', 'minus', 'times', 'divide', 'equals'],
+    operations: {
+        plus: (a, b) => a + b,
+        minus: (a, b) => a - b,
+        times: (a, b) => a * b,
+        divide: (a, b) => {
+            if (b === 0) throw new RangeError('MATH ERROR');
+            return a / b;
+        },
+    },
+};
 
-calculator.addEventListener('click', event => {
-    if (state.forceClear) { onClearHandler(); }
+const ui = {
+    calculator: document.querySelector('#calculator'),
+    display: document.querySelector('#displayText'),
+    decimal: document.querySelector('#decimal'),
+    operators: ['plus', 'minus', 'times', 'divide'].reduce((acc, op) => {
+        acc[op] = document.querySelector(`#${op}`);
+        return acc;
+    }, {})
+};
 
-    const id = event.target.id;
-    if (!isNaN(id)) {
-        onDigitInputHandler(id);
-    }
-    else if (OPERATORS.includes(id)) {
-        onOperatorInputHandler(id);
-    }
-    else if (id === 'clear' || id === 'clearText') {
-        onClearHandler();
-    }
-    else if (id === 'decimal') {
-        onDigitInputHandler('.');
-    }
+ui.calculator.addEventListener('click', event => {
+    if (state.forceClear) onClearHandler();
+
+    const id = event.target;
+
+    if (!isNaN(id)) onDigitInputHandler(id);
+    else if (calculator.operators.includes(id)) onOperatorInputHandler(id);
+    else if (id === 'clear' || id === 'clearText') onClearHandler();
+    else if (id === 'decimal') onDigitInputHandler('.');
 
     dumpState();
     renderView();
@@ -32,61 +43,53 @@ calculator.addEventListener('click', event => {
 
 function onOperatorInputHandler(operator) {
     const expression = state.expression;
-    if (expression.leftOperand !== null && expression.operator !== null && expression.rightOperand !== null) {
+    if (expression.a !== null && expression.operator !== null && expression.b !== null) {
         try {
-            expression.leftOperand = operate(expression.operator, expression.leftOperand, expression.rightOperand);
+            expression.a = calculator.operations[expression.operator](expression.a, expression.b);
             expression.operator = null;
-            expression.rightOperand = null;
-            state.displayValue = round(expression.leftOperand).toString();
+            expression.b = null;
+            state.displayValue = round(expression.a).toString();
         } catch (error) {
             state.displayValue = error.message;
             state.forceClear = true;
         }
     }
-    if (expression.leftOperand !== null && expression.operator === null && operator !== '=') {
+    if (expression.a !== null && expression.operator === null && operator !== 'equals') {
         expression.operator = operator;
     }
 }
 
 function onDigitInputHandler(digit) {
-    if (digit === '.' && isDecimalDisabled()) {
-        return;
-    }
+    if (digit === '.' && isDecimalDisabled()) return;
     const expression = state.expression;
     if (expression.operator === null) {
-        updateDisplayValue(digit, expression.leftOperand === null);
-        expression.leftOperand = Number(state.displayValue);
+        updateDisplayValue(digit, expression.a === null);
+        expression.a = Number(state.displayValue);
     } else {
-        updateDisplayValue(digit, expression.rightOperand === null);
-        expression.rightOperand = Number(state.displayValue);
+        updateDisplayValue(digit, expression.b === null);
+        expression.b = Number(state.displayValue);
     }
 }
 
-function updateDisplayValue(value, mustReset) {
-    if (mustReset) {
-        state.displayValue = value;
-    } else {
-        state.displayValue += value;
-    }
+function updateDisplayValue(value, reset) {
+    state.displayValue = reset ? value : state.displayValue + value;
 }
 
 function isDecimalDisabled() {
-    return state.displayValue.includes('.') || state.displayValue.length === 0;
+    return state.displayValue.includes('.') || state.displayValue.length === 0 || (state.expression.operator && state.expression.b === null);
 }
 
 function renderView() {
-    display.innerText = state.displayValue;
-    if (isDecimalDisabled()) {
-        decimal.classList.add('disabled');
-    } else {
-        decimal.classList.remove('disabled');
-    }
+    ui.display.innerText = state.displayValue;
+    ui.decimal.classList.toggle('disabled', isDecimalDisabled());
+    Object.values(ui.operators).forEach(op => op.classList.remove('highlight'));
+    if (state.expression.operator in ui.operators) ui.operators[state.expression.operator].classList.add('highlight');
 }
 
 function onClearHandler() {
-    state.expression.leftOperand = null;
+    state.expression.a = null;
     state.expression.operator = null;
-    state.expression.rightOperand = null;
+    state.expression.b = null;
     state.displayValue = '';
     state.forceClear = false;
 }
@@ -99,18 +102,4 @@ function dumpState() {
 // https://stackoverflow.com/questions/11832914/how-to-round-to-at-most-2-decimal-places-if-necessary
 function round(number) {
     return Math.round((number + Number.EPSILON) * 100) / 100;
-}
-
-function operate(operator, leftOperand, rightOperand) {
-    switch (operator) {
-        case '+': return leftOperand + rightOperand;
-        case '-': return leftOperand - rightOperand;
-        case '*': return leftOperand * rightOperand;
-        case '/':
-            if (rightOperand === 0) {
-                throw new RangeError('MATH ERROR');
-            } else {
-                return leftOperand / rightOperand;
-            }
-    }
 }
