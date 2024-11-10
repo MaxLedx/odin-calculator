@@ -1,11 +1,10 @@
-let state = {
+const state = {
     expression: {
-        firstOperand: null,
+        leftOperand: null,
         operator: null,
-        secondOperand: null
+        rightOperand: null
     },
-    displayValue: '',
-    freeze: false
+    displayValue: ''
 }
 
 const OPERATORS = ['+', '-', '*', '/', '='];
@@ -14,55 +13,67 @@ const display = document.querySelector('#display');
 
 calculator.addEventListener('click', event => {
     const id = event.target.id;
-    if (!isNaN(id)) updateDisplayValue(id);
-    else if (OPERATORS.includes(id)) computeExpression(id);
-    else if (id === 'clear' || id === 'clearText') clear();
-    updateExpression();
-    updateDisplay();
+
+    if (!isNaN(id)) {
+        onDigitInputHandler(id);
+    }
+    else if (OPERATORS.includes(id)) {
+        onOperatorInputHandler(id);
+    }
+    else if (id === 'clear' || id === 'clearText') {
+        onClearHandler();
+    }
+
+    dumpState();
+    render();
 });
 
-function computeExpression(operator) {
-    if (state.expression.firstOperand === null) return;
-    state.freeze = true;
-    if (state.expression.firstOperand !== null && state.expression.operator !== null && state.expression.secondOperand !== null) {
-        state.expression.firstOperand = operate(state.expression.operator, state.expression.firstOperand, state.expression.secondOperand);
-        state.expression.operator = operator === '=' ? null : operator;
-        state.expression.secondOperand = null;
-        state.displayValue = state.expression.firstOperand;
-    } else if (state.expression.firstOperand !== null && state.expression.operator === null) {
-        state.expression.operator = operator;
+function onOperatorInputHandler(operator) {
+    const expression = state.expression;
+    if (expression.leftOperand !== null && expression.operator !== null && expression.rightOperand !== null) {
+        expression.leftOperand = operate(expression.operator, expression.leftOperand, expression.rightOperand);
+        expression.operator = null;
+        expression.rightOperand = null;
+        state.displayValue = `${state.expression.leftOperand}`;
+    }
+    if (expression.operator === null && operator !== '=') {
+        expression.operator = operator;
     }
 }
 
-function updateExpression() {
-    if (state.freeze || state.displayValue === '') return;
-    const number = Number(state.displayValue);
-    if (state.expression.operator === null) {
-        state.expression.firstOperand = number;
+function onDigitInputHandler(digit) {
+    const expression = state.expression;
+    if (expression.operator === null) {
+        updateDisplayValue(digit, expression.leftOperand === null);
+        expression.leftOperand = Number(state.displayValue);
     } else {
-        state.expression.secondOperand = number;
+        updateDisplayValue(digit, expression.rightOperand === null);
+        expression.rightOperand = Number(state.displayValue);
     }
 }
 
-function updateDisplayValue(value) {
-    if (state.expression.firstOperand !== null && state.expression.operator !== null && state.expression.secondOperand === null) {
+function updateDisplayValue(value, mustReset) {
+    if (mustReset) {
         state.displayValue = value;
     } else {
         state.displayValue += value;
     }
 }
 
-function updateDisplay() {
-    state.freeze = false;
+function render() {
     display.innerText = state.displayValue;
 }
 
-function clear() {
-    state.expression.firstOperand = null;
+function onClearHandler() {
+    state.expression.leftOperand = null;
     state.expression.operator = null;
-    state.expression.secondOperand = null;
+    state.expression.rightOperand = null;
     state.displayValue = '';
-    state.freeze = false;
+}
+
+// Use for debug
+function dumpState() {
+    console.log(state);
 }
 
 function operate(operator, firstOperand, secondOperand) {
