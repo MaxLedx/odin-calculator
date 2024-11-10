@@ -5,15 +5,16 @@ const state = {
         rightOperand: null
     },
     displayValue: '',
-    mustClear: false,
+    forceClear: false,
 }
 
+const MAX_DISPLAYED_CHARACTERS = 10;
 const OPERATORS = ['+', '-', '*', '/', '='];
 const calculator = document.querySelector('#calculator');
-const display = document.querySelector('#display');
+const display = document.querySelector('#displayText');
 
 calculator.addEventListener('click', event => {
-    if (state.mustClear) {
+    if (state.forceClear) {
         onClearHandler();
     }
 
@@ -30,7 +31,7 @@ calculator.addEventListener('click', event => {
     }
 
     dumpState();
-    render();
+    renderView();
 });
 
 function onOperatorInputHandler(operator) {
@@ -41,12 +42,12 @@ function onOperatorInputHandler(operator) {
             expression.operator = null;
             expression.rightOperand = null;
             state.displayValue = 'ERROR';
-            state.mustClear = true;
+            state.forceClear = true;
         } else {
             expression.leftOperand = operate(expression.operator, expression.leftOperand, expression.rightOperand);
             expression.operator = null;
             expression.rightOperand = null;
-            state.displayValue = `${state.expression.leftOperand}`;
+            state.displayValue = round(state.expression.leftOperand).toString();
         }
     }
     if (expression.leftOperand !== null && expression.operator === null && operator !== '=') {
@@ -68,13 +69,17 @@ function onDigitInputHandler(digit) {
 function updateDisplayValue(value, mustReset) {
     if (mustReset) {
         state.displayValue = value;
-    } else {
+    } else if (state.displayValue.length < MAX_DISPLAYED_CHARACTERS) {
         state.displayValue += value;
     }
 }
 
-function render() {
+function renderView() {
     display.innerText = state.displayValue;
+}
+
+function round(number) {
+    return Math.round((number + Number.EPSILON) * 100) / 100;
 }
 
 function onClearHandler() {
@@ -82,7 +87,7 @@ function onClearHandler() {
     state.expression.operator = null;
     state.expression.rightOperand = null;
     state.displayValue = '';
-    state.mustClear = false;
+    state.forceClear = false;
 }
 
 // Use for debug

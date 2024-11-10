@@ -43,6 +43,12 @@ body {
     border-radius: 8px;
     font-size: 36px;
     padding: 8px;
+
+}
+
+#displayText {
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .btn,
