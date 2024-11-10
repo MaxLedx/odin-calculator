@@ -93,3 +93,7 @@ body {
 .disabled {
     opacity: 50%;
 }
+
+.highlight {
+    background-color: #FFB20F;
+}
