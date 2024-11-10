@@ -4,7 +4,8 @@ const state = {
         operator: null,
         rightOperand: null
     },
-    displayValue: ''
+    displayValue: '',
+    mustClear: false,
 }
 
 const OPERATORS = ['+', '-', '*', '/', '='];
@@ -12,6 +13,10 @@ const calculator = document.querySelector('#calculator');
 const display = document.querySelector('#display');
 
 calculator.addEventListener('click', event => {
+    if (state.mustClear) {
+        onClearHandler();
+    }
+
     const id = event.target.id;
 
     if (!isNaN(id)) {
@@ -31,12 +36,20 @@ calculator.addEventListener('click', event => {
 function onOperatorInputHandler(operator) {
     const expression = state.expression;
     if (expression.leftOperand !== null && expression.operator !== null && expression.rightOperand !== null) {
-        expression.leftOperand = operate(expression.operator, expression.leftOperand, expression.rightOperand);
-        expression.operator = null;
-        expression.rightOperand = null;
-        state.displayValue = `${state.expression.leftOperand}`;
+        if (expression.operator === '/' && expression.rightOperand === 0) {
+            expression.leftOperand = null
+            expression.operator = null;
+            expression.rightOperand = null;
+            state.displayValue = 'ERROR';
+            state.mustClear = true;
+        } else {
+            expression.leftOperand = operate(expression.operator, expression.leftOperand, expression.rightOperand);
+            expression.operator = null;
+            expression.rightOperand = null;
+            state.displayValue = `${state.expression.leftOperand}`;
+        }
     }
-    if (expression.operator === null && operator !== '=') {
+    if (expression.leftOperand !== null && expression.operator === null && operator !== '=') {
         expression.operator = operator;
     }
 }
@@ -69,6 +82,7 @@ function onClearHandler() {
     state.expression.operator = null;
     state.expression.rightOperand = null;
     state.displayValue = '';
+    state.mustClear = false;
 }
 
 // Use for debug
