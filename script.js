@@ -1,25 +1,18 @@
 const state = {
-    expression: {
-        leftOperand: null,
-        operator: null,
-        rightOperand: null
-    },
+    expression: { leftOperand: null, operator: null, rightOperand: null },
     displayValue: '',
     forceClear: false,
 }
 
-const MAX_DISPLAYED_CHARACTERS = 10;
 const OPERATORS = ['+', '-', '*', '/', '='];
 const calculator = document.querySelector('#calculator');
 const display = document.querySelector('#displayText');
+const decimal = document.querySelector('#decimal');
 
 calculator.addEventListener('click', event => {
-    if (state.forceClear) {
-        onClearHandler();
-    }
+    if (state.forceClear) { onClearHandler(); }
 
     const id = event.target.id;
-
     if (!isNaN(id)) {
         onDigitInputHandler(id);
     }
@@ -29,6 +22,9 @@ calculator.addEventListener('click', event => {
     else if (id === 'clear' || id === 'clearText') {
         onClearHandler();
     }
+    else if (id === 'decimal') {
+        onDigitInputHandler('.');
+    }
 
     dumpState();
     renderView();
@@ -37,17 +33,14 @@ calculator.addEventListener('click', event => {
 function onOperatorInputHandler(operator) {
     const expression = state.expression;
     if (expression.leftOperand !== null && expression.operator !== null && expression.rightOperand !== null) {
-        if (expression.operator === '/' && expression.rightOperand === 0) {
-            expression.leftOperand = null
-            expression.operator = null;
-            expression.rightOperand = null;
-            state.displayValue = 'ERROR';
-            state.forceClear = true;
-        } else {
+        try {
             expression.leftOperand = operate(expression.operator, expression.leftOperand, expression.rightOperand);
             expression.operator = null;
             expression.rightOperand = null;
-            state.displayValue = round(state.expression.leftOperand).toString();
+            state.displayValue = round(expression.leftOperand).toString();
+        } catch (error) {
+            state.displayValue = error.message;
+            state.forceClear = true;
         }
     }
     if (expression.leftOperand !== null && expression.operator === null && operator !== '=') {
@@ -56,6 +49,9 @@ function onOperatorInputHandler(operator) {
 }
 
 function onDigitInputHandler(digit) {
+    if (digit === '.' && isDecimalDisabled()) {
+        return;
+    }
     const expression = state.expression;
     if (expression.operator === null) {
         updateDisplayValue(digit, expression.leftOperand === null);
@@ -69,17 +65,22 @@ function onDigitInputHandler(digit) {
 function updateDisplayValue(value, mustReset) {
     if (mustReset) {
         state.displayValue = value;
-    } else if (state.displayValue.length < MAX_DISPLAYED_CHARACTERS) {
+    } else {
         state.displayValue += value;
     }
 }
 
-function renderView() {
-    display.innerText = state.displayValue;
+function isDecimalDisabled() {
+    return state.displayValue.includes('.') || state.displayValue.length === 0;
 }
 
-function round(number) {
-    return Math.round((number + Number.EPSILON) * 100) / 100;
+function renderView() {
+    display.innerText = state.displayValue;
+    if (isDecimalDisabled()) {
+        decimal.classList.add('disabled');
+    } else {
+        decimal.classList.remove('disabled');
+    }
 }
 
 function onClearHandler() {
@@ -95,27 +96,21 @@ function dumpState() {
     console.log(state);
 }
 
-function operate(operator, firstOperand, secondOperand) {
+// https://stackoverflow.com/questions/11832914/how-to-round-to-at-most-2-decimal-places-if-necessary
+function round(number) {
+    return Math.round((number + Number.EPSILON) * 100) / 100;
+}
+
+function operate(operator, leftOperand, rightOperand) {
     switch (operator) {
-        case '+': return add(firstOperand, secondOperand);
-        case '-': return subtract(firstOperand, secondOperand);
-        case '*': return multiply(firstOperand, secondOperand);
-        case '/': return divide(firstOperand, secondOperand);
+        case '+': return leftOperand + rightOperand;
+        case '-': return leftOperand - rightOperand;
+        case '*': return leftOperand * rightOperand;
+        case '/':
+            if (rightOperand === 0) {
+                throw new RangeError('MATH ERROR');
+            } else {
+                return leftOperand / rightOperand;
+            }
     }
-}
-
-function add(firstOperand, secondOperand) {
-    return firstOperand + secondOperand;
-}
-
-function subtract(firstOperand, secondOperand) {
-    return firstOperand - secondOperand;
-}
-
-function multiply(firstOperand, secondOperand) {
-    return firstOperand * secondOperand;
-}
-
-function divide(firstOperand, secondOperand) {
-    return firstOperand / secondOperand;
 }
