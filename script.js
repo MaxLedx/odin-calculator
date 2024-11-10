@@ -21,6 +21,7 @@ const ui = {
     calculator: document.querySelector('#calculator'),
     display: document.querySelector('#displayText'),
     decimal: document.querySelector('#decimal'),
+    backspace: document.querySelector('#backspace'),
     operators: ['plus', 'minus', 'times', 'divide'].reduce((acc, op) => {
         acc[op] = document.querySelector(`#${op}`);
         return acc;
@@ -30,12 +31,13 @@ const ui = {
 ui.calculator.addEventListener('click', event => {
     if (state.forceClear) onClearHandler();
 
-    const id = event.target;
+    const id = event.target.id;
 
     if (!isNaN(id)) onDigitInputHandler(id);
     else if (calculator.operators.includes(id)) onOperatorInputHandler(id);
     else if (id === 'clear' || id === 'clearText') onClearHandler();
     else if (id === 'decimal') onDigitInputHandler('.');
+    else if (id === 'backspace') onBackspaceHandler();
 
     dumpState();
     renderView();
@@ -71,17 +73,33 @@ function onDigitInputHandler(digit) {
     }
 }
 
+function onBackspaceHandler() {
+    if (isBackspaceDisabled()) return;
+    state.displayValue = state.displayValue.slice(0, -1) || '';
+    if (state.expression.operator) {
+        state.expression.b = Number(state.displayValue) || null;
+    } else {
+        state.expression.a = Number(state.displayValue) || null;
+    }
+}
+
 function updateDisplayValue(value, reset) {
     state.displayValue = reset ? value : state.displayValue + value;
 }
 
 function isDecimalDisabled() {
-    return state.displayValue.includes('.') || state.displayValue.length === 0 || (state.expression.operator && state.expression.b === null);
+    const { displayValue, expression } = state;
+    return !displayValue || displayValue.includes('.') || (expression.operator && expression.b === null);
+}
+
+function isBackspaceDisabled() {
+    return state.expression.operator && state.expression.b === null;
 }
 
 function renderView() {
     ui.display.innerText = state.displayValue;
     ui.decimal.classList.toggle('disabled', isDecimalDisabled());
+    ui.backspace.classList.toggle('disabled', isBackspaceDisabled());
     Object.values(ui.operators).forEach(op => op.classList.remove('highlight'));
     if (state.expression.operator in ui.operators) ui.operators[state.expression.operator].classList.add('highlight');
 }
