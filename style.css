@@ -97,3 +97,7 @@ body {
 .highlight {
     background-color: #FFB20F;
 }
+
+.btn:active {
+    background: linear-gradient(145deg, #696565, #514f4f);
+}
