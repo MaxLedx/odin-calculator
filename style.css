@@ -8,6 +8,10 @@ html {
     box-sizing: inherit;
 }
 
+* {
+    font-family: "Host Grotesk", sans-serif;
+}
+
 body {
     height: 100vh;
     display: flex;
@@ -17,7 +21,7 @@ body {
     background-color: #188FA7;
 }
 
-.calculator {
+#calculator {
     width: 296px;
     height: 456px;
     display: flex;
@@ -30,7 +34,7 @@ body {
     border-radius: 12px;
 }
 
-.display {
+#display {
     width: 280px;
     height: 80px;
     display: flex;
@@ -40,9 +44,17 @@ body {
     border-radius: 8px;
     font-size: 36px;
     padding: 8px;
+
 }
 
-.button {
+#displayText {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.btn,
+.btn-medium,
+.btn-large {
     width: 64px;
     height: 64px;
     display: flex;
@@ -54,10 +66,38 @@ body {
     font-size: 24px;
 }
 
-.button-medium {
+.btn-medium {
     width: 100px;
 }
 
-.button-large {
+.btn-large {
     width: 136px;
+}
+
+.btn-action {
+    background-color: #FFB20F;
+}
+
+.btn-action :first-child::first-letter {
+    text-decoration: underline;
+}
+
+.btn-digit {
+    background-color: #D81E5B;
+}
+
+.btn-operator {
+    background-color: #188FA7;
+}
+
+.disabled {
+    opacity: 50%;
+}
+
+.highlight {
+    background-color: #FFB20F;
+}
+
+.btn:active {
+    background: linear-gradient(145deg, #696565, #514f4f);
 }
